@@ -1,0 +1,73 @@
+@model ChatViewModel
+@{
+    ViewData["Title"] = "Mesajlar";
+}
+
+<section class="page-section">
+    <div class="container">
+        <h1 class="h3 mb-3">Mesajlar</h1>
+        <div class="row border rounded-4 chat-frame g-0 bg-white">
+            <div class="col-md-4 border-end contacts h-100">
+                <div class="px-3 pt-3 pb-1 small text-muted fw-bold">Sohbetlerim</div>
+                @if (Model.Conversations.Count == 0)
+                {
+                    <div class="px-3 pb-2 small text-muted">Henüz bir sohbetin yok.</div>
+                }
+                <div class="list-group list-group-flush">
+                    @foreach (var c in Model.Conversations)
+                    {
+                        <partial name="_ChatContactRow" model="(c, Model.Active?.Key == c.Key)" />
+                    }
+                </div>
+            </div>
+            <div class="col-md-8 d-flex flex-column h-100">
+                @if (Model.Active is null)
+                {
+                    <div class="m-auto text-muted p-3 text-center">
+                        Mesajlaşmak için soldan bir sohbet seç.<br />
+                        Yeni bir sohbet başlatmak için bir gezdiricinin profilinden "Mesaj gönder"e tıkla.
+                        <div class="mt-3"><a asp-controller="Walkers" asp-action="Index" class="link-nav fw-bold">Gezdirici Ara</a></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 border-bottom"><span class="fw-bold">@Model.Active.Name</span> <span class="small text-muted">@Model.Active.Details</span></div>
+                    <div class="chat-messages flex-grow-1 p-3 d-flex flex-column gap-2" id="chatMessages">
+                        @if (Model.Messages.Count == 0)
+                        {
+                            <div class="text-muted m-auto">Henüz mesaj yok. İlk mesajı sen gönder!</div>
+                        }
+                        @foreach (var m in Model.Messages)
+                        {
+                            // As a walker, "mine" are the messages the walker sent.
+                            var mine = m.SentByCustomer != Model.ActiveAsWalker;
+                            <div class="chat-bubble @(mine ? "mine" : "theirs")">
+                                <div class="chat-text">@m.Text</div>
+                                <div class="small opacity-75 text-end">@m.SentAtUtc.ToLocalTime().ToString("HH:mm dd.MM.yyyy")</div>
+                            </div>
+                        }
+                    </div>
+                    <form asp-action="Send" method="post" class="d-flex gap-2 p-2 border-top">
+                        @if (Model.ActiveAsWalker)
+                        {
+                            <input type="hidden" name="customerId" value="@Model.Active.Key[1..]" />
+                        }
+                        else
+                        {
+                            <input type="hidden" name="walkerId" value="@Model.Active.Key[1..]" />
+                        }
+                        <input name="text" class="form-control" maxlength="1000" placeholder="Mesajını yaz..." autocomplete="off" required autofocus aria-label="Mesaj" />
+                        <button type="submit" class="btn btn-green" aria-label="Gönder"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const box = document.getElementById('chatMessages');
+        if (box) box.scrollTop = box.scrollHeight;
+    </script>
+}

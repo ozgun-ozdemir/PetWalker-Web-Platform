@@ -1,0 +1,157 @@
+@model (Walk Walk, bool Mine)
+@{
+    // Mine = a walk I booked as an owner. Otherwise it is a request someone made to me as a walker.
+    var walk = Model.Walk;
+    var upcoming = walk.StartsAt > DateTime.Now;
+    var closed = walk.Status is WalkStatus.Cancelled or WalkStatus.Rejected;
+    // A request the walker never answered before its time: it can only be deleted.
+    var expired = walk.Status == WalkStatus.Pending && !upcoming;
+    // Finished = marked completed, or an accepted walk whose time has passed.
+    var finished = walk.Status == WalkStatus.Completed || (walk.Status == WalkStatus.Accepted && !upcoming);
+    var canRate = Model.Mine && finished && walk.Rating is null;
+}
+<div class="card walk-card mb-3 @(closed ? "cancelled" : "")">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-6 col-md-2">
+                <div class="walk-label">Tarih</div>
+                <div class="fw-bold">@walk.StartsAt.ToString("dd.MM.yyyy HH:mm")</div>
+            </div>
+            <div class="col-6 col-md-1">
+                <div class="walk-label">Evcil Hayvan</div>
+                <div>@walk.Pet.Name</div>
+            </div>
+            <div class="col-6 col-md-2">
+                @if (Model.Mine)
+                {
+                    <div class="walk-label">Gezdirici</div>
+                    <a asp-controller="Walkers" asp-action="Details" asp-route-id="@walk.WalkerId">@walk.Walker.FullName</a>
+                }
+                else
+                {
+                    <div class="walk-label">Sahibi</div>
+                    <div>@walk.Customer.FullName</div>
+                }
+            </div>
+            <div class="col-3 col-md-1">
+                <div class="walk-label">Süre</div>
+                <div>@walk.DurationMinutes dk</div>
+            </div>
+            <div class="col-3 col-md-1">
+                <div class="walk-label">Ücret</div>
+                <div>@walk.Price.ToString("0.##") ₺</div>
+            </div>
+            <div class="col-md-2">
+                <div class="walk-label">Değerlendirme</div>
+                @if (closed)
+                {
+                    <span class="badge text-bg-secondary">@(walk.Status == WalkStatus.Cancelled ? "İptal edildi" : "Reddedildi")</span>
+                }
+                else if (walk.Status == WalkStatus.Pending)
+                {
+                    <span class="badge text-bg-warning">@(upcoming ? "Onay bekliyor" : "Yanıtlanmadı")</span>
+                }
+                else if (walk.Rating is not null)
+                {
+                    <partial name="_Stars" model="(double?)walk.Rating" />
+                }
+                else if (canRate)
+                {
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#rateModal@(walk.Id)">
+                        <i class="fa-solid fa-star"></i> Puanla
+                    </button>
+                }
+                else if (finished)
+                {
+                    <span class="text-muted small">Henüz puanlanmadı</span>
+                }
+                else
+                {
+                    <span class="badge text-bg-success">Onaylandı</span>
+                }
+            </div>
+            <div class="col-md-3 d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+                @if (Model.Mine)
+                {
+                    <a asp-controller="Chat" asp-action="Index" asp-route-walkerId="@walk.WalkerId" class="btn btn-green btn-sm">
+                        <i class="fa-solid fa-comments"></i> İletişime Geç
+                    </a>
+                    @if (closed || expired)
+                    {
+                        <form asp-controller="Walks" asp-action="Delete" asp-route-id="@walk.Id" method="post"
+                              onsubmit="return confirm('Emin misiniz? Bu kayıt silinecek.');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm btn-icon" data-bs-toggle="tooltip" title="Sil" aria-label="Sil"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    }
+                    @if (walk.Status == WalkStatus.Accepted)
+                    {
+                        <form asp-controller="Walks" asp-action="Complete" asp-route-id="@walk.Id" method="post">
+                            <button type="submit" class="btn btn-outline-success btn-sm btn-icon" data-bs-toggle="tooltip" title="Tamamlandı" aria-label="Tamamlandı"><i class="fa-solid fa-check"></i></button>
+                        </form>
+                    }
+                    @if (upcoming && walk.Status is (WalkStatus.Pending or WalkStatus.Accepted))
+                    {
+                        <form asp-controller="Walks" asp-action="Cancel" asp-route-id="@walk.Id" method="post"
+                              onsubmit="return confirm('Emin misiniz?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm btn-icon" data-bs-toggle="tooltip" title="İptal" aria-label="İptal"><i class="fa-solid fa-xmark"></i></button>
+                        </form>
+                    }
+                }
+                else
+                {
+                    <a asp-controller="Chat" asp-action="Index" asp-route-customerId="@walk.CustomerId" class="btn btn-green btn-sm">
+                        <i class="fa-solid fa-comments"></i> İletişime Geç
+                    </a>
+                    @if (walk.Status == WalkStatus.Pending && upcoming)
+                    {
+                        <form asp-controller="Walks" asp-action="Accept" asp-route-id="@walk.Id" method="post">
+                            <button type="submit" class="btn btn-outline-success btn-sm btn-icon" data-bs-toggle="tooltip" title="Onayla" aria-label="Onayla"><i class="fa-solid fa-check"></i></button>
+                        </form>
+                        <form asp-controller="Walks" asp-action="Reject" asp-route-id="@walk.Id" method="post"
+                              onsubmit="return confirm('Emin misiniz? İstek reddedilecek.');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm btn-icon" data-bs-toggle="tooltip" title="Reddet" aria-label="Reddet"><i class="fa-solid fa-xmark"></i></button>
+                        </form>
+                    }
+                    else if (walk.Status == WalkStatus.Accepted && upcoming)
+                    {
+                        <form asp-controller="Walks" asp-action="WalkerCancel" asp-route-id="@walk.Id" method="post"
+                              onsubmit="return confirm('Emin misiniz? Bu yürüyüş iptal edilecek.');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm btn-icon" data-bs-toggle="tooltip" title="İptal Et" aria-label="İptal Et"><i class="fa-solid fa-xmark"></i></button>
+                        </form>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (canRate)
+{
+    <div class="modal fade" id="rateModal@(walk.Id)" tabindex="-1" aria-labelledby="rateTitle@(walk.Id)" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form asp-controller="Walks" asp-action="Rate" method="post" class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="rateTitle@(walk.Id)">@walk.Walker.FullName ile yürüyüşü değerlendir</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="WalkId" value="@walk.Id" />
+                    <span class="form-label d-block">Puan</span>
+                    <div class="star-input mb-3" role="radiogroup" aria-label="Puan">
+                        @for (var i = 5; i >= 1; i--)
+                        {
+                            <input type="radio" name="Rating" value="@i" id="r@(walk.Id)_@i" required />
+                            <label for="r@(walk.Id)_@i" title="@i / 5"><i class="fa-solid fa-star"></i></label>
+                        }
+                    </div>
+                    <label for="review@(walk.Id)" class="form-label">Yorum</label>
+                    <textarea id="review@(walk.Id)" name="Review" rows="3" maxlength="500" class="form-control" placeholder="Yürüyüş nasıl geçti? (isteğe bağlı)"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-brand">Gönder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

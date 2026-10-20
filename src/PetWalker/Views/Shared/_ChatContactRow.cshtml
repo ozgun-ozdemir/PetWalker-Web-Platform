@@ -1,0 +1,22 @@
+@model (ChatContact Contact, bool Active)
+@{
+    // Key is "w<id>" for a walker or "c<id>" for a customer.
+    var c = Model.Contact;
+    var param = c.Key[0] == 'w' ? "walkerId" : "customerId";
+    var id = c.Key[1..];
+}
+<div class="list-group-item list-group-item-action chat-contact d-flex align-items-center gap-2 @(Model.Active ? "active" : "")">
+    <a href="@Url.Action("Index", "Chat", new Dictionary<string, string> { [param] = id })" class="flex-grow-1 text-reset text-decoration-none">
+        <div><span class="fw-bold">@c.Name</span> <span class="small">@c.Details</span></div>
+        <div class="small">@c.Subtitle</div>
+    </a>
+    @if (c.HasMessages)
+    {
+        <form asp-controller="Chat" asp-action="Delete" method="post" onsubmit="return confirm('Sohbet silinecektir. Emin misiniz?');">
+            <input type="hidden" name="@param" value="@id" />
+            <button type="submit" class="btn btn-sm btn-link chat-delete" data-bs-toggle="tooltip" title="Sil" aria-label="@c.Name ile sohbeti sil">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </form>
+    }
+</div>

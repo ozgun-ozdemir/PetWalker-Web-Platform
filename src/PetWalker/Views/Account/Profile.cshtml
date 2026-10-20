@@ -1,0 +1,270 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "Profilim";
+    var c = Model.Customer;
+    var isWalker = Model.WalkerProfile is not null;
+}
+
+<section class="page-section">
+    <div class="container">
+        <div class="surface position-relative">
+            <button type="button" class="btn btn-brand position-absolute top-0 end-0 m-3" data-bs-toggle="modal" data-bs-target="#editModal">
+                <i class="fa-solid fa-pen"></i> Profilimi Güncelle
+            </button>
+
+            <div class="d-flex flex-column flex-md-row gap-4 align-items-md-center pe-md-5 mt-5 mt-md-0">
+                @* Choosing a file uploads it right away. *@
+                <form asp-action="Photo" method="post" enctype="multipart/form-data" id="photoForm">
+                    <label class="photo-upload" title="Profil fotoğrafını değiştir">
+                        <img src="@(c.PhotoPath ?? Url.Content("~/images/dog4.jpg"))" alt="Profil fotoğrafı" class="profile-photo">
+                        <span class="photo-plus" aria-hidden="true"><i class="fa-solid fa-plus"></i></span>
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="visually-hidden"
+                               aria-label="Profil fotoğrafı seç" onchange="if (this.files.length) this.form.submit()" />
+                    </label>
+                </form>
+                <div>
+                    <h1 class="mb-1">@c.FullName</h1>
+                    <p class="text-muted mb-2">
+                        @Age.From(c.DateOfBirth) yaş · @c.Gender.ToTurkish()
+                        @if (isWalker) { <span class="badge text-bg-warning ms-1"><i class="fa-solid fa-person-walking"></i> Gezdirici</span> }
+                    </p>
+                    <p class="mb-1"><i class="fa-solid fa-envelope text-brand"></i> @c.Email</p>
+                    <p class="mb-1"><i class="fa-solid fa-phone text-brand"></i> @c.Phone</p>
+                    <p class="mb-0"><i class="fa-solid fa-location-dot text-brand"></i> @c.Address</p>
+                    @if (isWalker)
+                    {
+                        <a asp-controller="Walkers" asp-action="Details" asp-route-id="@Model.WalkerProfile!.Id" class="btn btn-secondary btn-sm mt-3">
+                            <i class="fa-solid fa-id-badge"></i> Gezdirici profilimi görüntüle
+                        </a>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-secondary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#walkerModal">
+                            <i class="fa-solid fa-plus"></i> Gezdirici Profili Oluştur
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <h2 class="h4 mb-0">Evcil Hayvanlarım</h2>
+                <button type="button" class="btn btn-green" data-bs-toggle="modal" data-bs-target="#petModal"><i class="fa-solid fa-plus"></i> Evcil Hayvan Ekle</button>
+            </div>
+            @if (Model.Pets.Count == 0)
+            {
+                <p class="text-muted">Henüz evcil hayvan eklemedin.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead><tr><th>İsim</th><th>Tür</th><th>Cins</th><th>Cinsiyet</th><th>Yaş</th><th>Kilo</th><th>Renk</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var pet in Model.Pets)
+                            {
+                                <tr>
+                                    <td>@pet.Name</td>
+                                    <td>@pet.Type.ToTurkish()</td>
+                                    <td>@pet.Breed</td>
+                                    <td>@pet.Sex.ToTurkish()</td>
+                                    <td>@pet.AgeYears</td>
+                                    <td>@pet.WeightKg kg</td>
+                                    <td>@pet.Color</td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-icon me-1" title="Düzenle" aria-label="Düzenle" data-tooltip
+                                                data-bs-toggle="modal" data-bs-target="#petModal"
+                                                data-pet-id="@pet.Id" data-name="@pet.Name" data-type="@pet.Type" data-breed="@pet.Breed"
+                                                data-sex="@pet.Sex" data-age="@pet.AgeYears"
+                                                data-weight="@pet.WeightKg.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-color="@pet.Color">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        @* The name is read from data-name, never written into the script itself. *@
+                                        <form asp-controller="Pets" asp-action="Delete" asp-route-id="@pet.Id" method="post" class="d-inline"
+                                              data-name="@pet.Name" onsubmit="return confirm('Emin misiniz? ' + this.dataset.name + ' silinecek.');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger btn-icon" data-bs-toggle="tooltip" title="Sil" aria-label="Sil"><i class="fa-solid fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (!isWalker)
+{
+    <partial name="_WalkerFormModal" model="(Model.WalkerForm, false)" />
+}
+
+@* ---------- Profilimi Güncelle ---------- *@
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="editModalTitle">Profilimi Güncelle</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Edit" method="post" id="editForm" data-tr-validation>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            <label asp-for="EditForm.FirstName" class="form-label"></label>
+                            <input asp-for="EditForm.FirstName" class="form-control" placeholder="Ad" autocomplete="given-name" required />
+                            <span asp-validation-for="EditForm.FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="EditForm.LastName" class="form-label"></label>
+                            <input asp-for="EditForm.LastName" class="form-control" placeholder="Soyad" autocomplete="family-name" required />
+                            <span asp-validation-for="EditForm.LastName" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="EditForm.DateOfBirth" class="form-label"></label>
+                        <input asp-for="EditForm.DateOfBirth" class="form-control" placeholder="GG/AA/YYYY" maxlength="10" data-date-tr
+                               data-max="@DateTime.Today.AddYears(-18).ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture)"
+                               pattern="\d{2}/\d{2}/\d{4}" title="Tarihi GG/AA/YYYY biçiminde girin (ör. 20/10/2000)." required />
+                        <span asp-validation-for="EditForm.DateOfBirth" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="form-label d-block">Cinsiyet</span>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" asp-for="EditForm.Gender" value="@Gender.Female" id="editFemale" required />
+                            <label class="form-check-label" for="editFemale">Kadın</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" asp-for="EditForm.Gender" value="@Gender.Male" id="editMale" />
+                            <label class="form-check-label" for="editMale">Erkek</label>
+                        </div>
+                        <span asp-validation-for="EditForm.Gender" class="text-danger small d-block"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="EditForm.Address" class="form-label"></label>
+                        <partial name="_DistrictSelect" model='("EditForm.Address", "EditForm_Address", Model.EditForm.Address)' />
+                        <span asp-validation-for="EditForm.Address" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="EditForm.Email" class="form-label"></label>
+                        <input asp-for="EditForm.Email" type="email" class="form-control" placeholder="E-posta" autocomplete="email" required />
+                        <span asp-validation-for="EditForm.Email" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="EditForm.Phone" class="form-label"></label>
+                        <input asp-for="EditForm.Phone" type="tel" class="form-control" placeholder="Telefon" autocomplete="tel" inputmode="numeric"
+                               maxlength="11" pattern="0[0-9]{10}" data-phone-tr title="Telefon 0 ile başlamalı ve 11 haneli olmalı (ör. 05321234567)." required />
+                        <span asp-validation-for="EditForm.Phone" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-2">
+                        <label asp-for="EditForm.NewPassword" class="form-label"></label>
+                        <input asp-for="EditForm.NewPassword" class="form-control" placeholder="Değiştirmek istemiyorsan boş bırak" autocomplete="new-password" minlength="8" />
+                        <span asp-validation-for="EditForm.NewPassword" class="text-danger small"></span>
+                    </div>
+                </form>
+                <hr class="my-3" />
+                <form asp-action="DeleteAccount" method="post"
+                      onsubmit="return confirm('Hesabınız kalıcı olarak silinecektir. Bunun geri dönüşü yoktur. Emin misiniz?');">
+                    <button type="submit" class="btn btn-link text-danger p-0"><i class="fa-solid fa-user-xmark"></i> Hesabı Sil</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="submit" form="editForm" class="btn btn-brand">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ---------- Evcil Hayvan Ekle ---------- *@
+<div class="modal fade" id="petModal" tabindex="-1" aria-labelledby="petModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        @* Used for both adding and editing; the edit buttons fill it in (see the script below). *@
+        <form asp-controller="Pets" asp-action="Create" method="post" class="modal-content" id="petForm" data-tr-validation>
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="petModalTitle">Yeni Evcil Hayvan</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label asp-for="PetForm.Name" class="form-label"></label>
+                    <input asp-for="PetForm.Name" class="form-control" placeholder="İsim" required />
+                </div>
+                <div class="mb-3">
+                    <span class="form-label d-block">Tür</span>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="PetForm.Type" value="@PetType.Dog" id="petDog" required />
+                        <label class="form-check-label" for="petDog">Köpek</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="PetForm.Type" value="@PetType.Cat" id="petCat" />
+                        <label class="form-check-label" for="petCat">Kedi</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="PetForm.Breed" class="form-label"></label>
+                    <input asp-for="PetForm.Breed" class="form-control" placeholder="Cins" required />
+                </div>
+                <div class="mb-3">
+                    <span class="form-label d-block">Cinsiyet</span>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="PetForm.Sex" value="@PetSex.Male" id="petMale" required />
+                        <label class="form-check-label" for="petMale">Erkek</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="PetForm.Sex" value="@PetSex.Female" id="petFemale" />
+                        <label class="form-check-label" for="petFemale">Dişi</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="PetForm.AgeYears" class="form-label"></label>
+                    <input asp-for="PetForm.AgeYears" class="form-control" type="number" min="0" max="40" value="" required />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="PetForm.WeightKg" class="form-label"></label>
+                    <input asp-for="PetForm.WeightKg" class="form-control" type="number" step="0.1" min="0.1" max="150" value="" required />
+                </div>
+                <div class="mb-1">
+                    <label asp-for="PetForm.Color" class="form-label"></label>
+                    <input asp-for="PetForm.Color" class="form-control" placeholder="Renk" required />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="submit" class="btn btn-green" id="petSubmit">Ekle</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_DatePicker" />
+    <script src="~/js/forms.js" asp-append-version="true"></script>
+    <script>
+        // The pet window adds a new pet, or edits one when it is opened from a pencil button.
+        const petModal = document.getElementById('petModal');
+        petModal.addEventListener('show.bs.modal', e => {
+            const pet = e.relatedTarget?.dataset ?? {};
+            const editing = !!pet.petId;
+            const form = document.getElementById('petForm');
+            form.action = editing ? '@Url.Action("Edit", "Pets")/' + pet.petId : '@Url.Action("Create", "Pets")';
+            document.getElementById('petModalTitle').textContent = editing ? 'Evcil Hayvanı Düzenle' : 'Yeni Evcil Hayvan';
+            const submit = document.getElementById('petSubmit');
+            submit.textContent = editing ? 'Kaydet' : 'Ekle';
+            submit.classList.toggle('btn-brand', editing);   // Kaydet: orange
+            submit.classList.toggle('btn-green', !editing);  // Ekle: green
+            const set = (name, value) => { form.elements['PetForm.' + name].value = value ?? ''; };
+            set('Name', pet.name); set('Breed', pet.breed); set('AgeYears', pet.age);
+            set('WeightKg', pet.weight); set('Color', pet.color);
+            for (const [name, value] of [['Type', pet.type], ['Sex', pet.sex]])
+                for (const radio of form.querySelectorAll(`input[name="PetForm.${name}"]`)) radio.checked = radio.value === value;
+        });
+    </script>
+    @if (ViewData["OpenModal"] is string open)
+    {
+        <script>bootstrap.Modal.getOrCreateInstance(document.getElementById('@open')).show();</script>
+    }
+}

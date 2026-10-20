@@ -1,0 +1,138 @@
+@model WalkerProfileViewModel
+@{
+    var w = Model.Card.Walker;
+    ViewData["Title"] = w.FullName;
+    var minDate = DateTime.Now.AddHours(1).ToString("yyyy-MM-dd HH:mm");
+    var firstPrice = w.PricePer30Min * Model.Booking.DurationMinutes / 30;
+}
+<section class="page-section">
+<div class="container">
+    <div class="surface position-relative">
+        @if (Model.IsMe)
+        {
+            <button type="button" class="btn btn-brand position-absolute top-0 end-0 m-3" data-bs-toggle="modal" data-bs-target="#walkerModal">
+                <i class="fa-solid fa-pen"></i> Gezdirici Bilgilerim
+            </button>
+        }
+        else
+        {
+            <button type="button" class="btn btn-brand position-absolute top-0 end-0 m-3" data-bs-toggle="modal" data-bs-target="#bookModal">
+                <i class="fa-solid fa-plus"></i> Yürüyüş Planla
+            </button>
+        }
+        <div class="d-flex flex-column flex-md-row gap-4 align-items-md-center pe-md-5 mt-5 mt-md-0">
+            <img src="@(Model.Card.PhotoPath ?? Url.Content("~/images/dog.jpg"))" alt="" class="profile-photo">
+            <div>
+                <h1 class="mb-1">@w.FullName</h1>
+                <p class="text-muted mb-2">@w.Age yaş · @w.Gender.ToTurkish()</p>
+                <p class="mb-1">
+                    <partial name="_Stars" model="Model.Card.AverageRating" />
+                    <span class="small text-muted">@(Model.Card.RatingCount == 0 ? "Henüz değerlendirme yok" : $"({Model.Card.RatingCount} değerlendirme)")</span>
+                </p>
+                <p class="mb-1"><i class="fa-solid fa-location-dot text-brand"></i> @w.Address</p>
+                <p class="mb-1"><i class="fa-solid fa-briefcase text-brand"></i> @w.ExperienceYears yıl deneyim</p>
+                <p class="mb-1"><i class="fa-solid fa-turkish-lira-sign text-brand"></i> @w.PricePer30Min.ToString("0.##") ₺ / 30 dk</p>
+                @if (!string.IsNullOrEmpty(w.Bio)) { <p class="mb-0">@w.Bio</p> }
+                @if (Model.IsMe)
+                {
+                    <a asp-controller="Account" asp-action="Profile" class="btn btn-secondary btn-sm mt-3"><i class="fa-solid fa-user"></i> Profilimi görüntüle</a>
+                }
+                else
+                {
+                    <a asp-controller="Chat" asp-action="Index" asp-route-walkerId="@w.Id" class="btn btn-green btn-sm mt-2"><i class="fa-solid fa-comments"></i> Mesaj gönder</a>
+                }
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h2>Değerlendirmeler</h2>
+            @if (Model.Reviews.Count == 0)
+            {
+                <p class="text-muted">Henüz değerlendirme yok.</p>
+            }
+            @foreach (var r in Model.Reviews)
+            {
+                <div class="border-bottom py-2">
+                    <partial name="_Stars" model="(double?)r.Rating" />
+                    <strong class="ms-2">@r.Customer.FirstName</strong>
+                    <span class="small text-muted">@r.StartsAt.ToString("dd.MM.yyyy")</span>
+                    @if (!string.IsNullOrEmpty(r.Review)) { <p class="mb-0">@r.Review</p> }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+</section>
+
+@if (!Model.IsMe)
+{
+    <div class="modal fade" id="bookModal" tabindex="-1" aria-labelledby="bookModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="bookModalTitle">Yürüyüş Planla</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                @if (Model.MyPets.Count == 0)
+                {
+                    <div class="modal-body">
+                        <p class="mb-0">Yürüyüş planlamak için önce <a asp-controller="Account" asp-action="Profile" asp-route-addPet="true">bir evcil hayvan ekle</a>.</p>
+                    </div>
+                }
+                else
+                {
+                    <form asp-action="Book" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" name="WalkerId" value="@w.Id" />
+                            <div class="mb-3">
+                                <label class="form-label" for="PetId">Evcil hayvan</label>
+                                <select id="PetId" name="PetId" class="form-select" required>
+                                    @foreach (var p in Model.MyPets) { <option value="@p.Id">@p.Name</option> }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="StartsAt">Tarih ve saat</label>
+                                <input id="StartsAt" name="StartsAt" class="form-control" data-datetime-tr data-min="@minDate"
+                                       value="@Model.Booking.StartsAt?.ToString("yyyy-MM-dd HH:mm")" placeholder="GG/AA/YYYY SS:DD" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="DurationMinutes">Süre</label>
+                                <select id="DurationMinutes" name="DurationMinutes" class="form-select" data-price="@w.PricePer30Min.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                                    @foreach (var d in w.Durations) { <option value="@d">@BookWalkViewModel.DurationLabel(d)</option> }
+                                </select>
+                            </div>
+                            <div>
+                                <span class="form-label d-block">Ücret</span>
+                                <strong id="PricePreview">@firstPrice.ToString("0.##") ₺</strong>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                            <button type="submit" class="btn btn-brand">İstek Gönder</button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.IsMe && Model.WalkerForm is not null)
+{
+    <partial name="_WalkerFormModal" model="(Model.WalkerForm, true)" />
+}
+
+@section Scripts {
+    <partial name="_DatePicker" />
+    <script>
+        // Display only: the server recalculates the price when the walk is booked.
+        const duration = document.getElementById('DurationMinutes');
+        if (duration) {
+            const per30 = parseFloat(duration.dataset.price);
+            duration.addEventListener('change', () => {
+                const price = per30 * parseInt(duration.value, 10) / 30;
+                document.getElementById('PricePreview').textContent = price.toLocaleString('tr-TR') + ' ₺';
+            });
+        }
+    </script>
+}

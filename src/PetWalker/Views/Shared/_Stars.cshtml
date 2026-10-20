@@ -1,0 +1,11 @@
+@model double?
+@* Out of 5, rounded to whole stars. *@
+@{
+    var filled = Model is { } r ? (int)Math.Round(r, MidpointRounding.AwayFromZero) : 0;
+}
+<span class="rating-stars" title="@(Model is null ? "Henüz puan yok" : $"{filled} / 5")" aria-label="@(Model is null ? "Henüz puan yok" : $"5 üzerinden {filled}")">
+    @for (var i = 1; i <= 5; i++)
+    {
+        <i class="fa-@(i <= filled ? "solid" : "regular") fa-star"></i>
+    }
+</span>

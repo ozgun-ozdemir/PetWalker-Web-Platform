@@ -1,0 +1,93 @@
+@model SignUpViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<section class="photo-page bg-signup">
+    <div class="container-fluid px-4 px-lg-5">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center">
+                <form asp-action="SignUp" method="post" class="glass-dark auth-form signup" id="signUpForm" data-tr-validation>
+                    <h1 class="h3 mb-3">Kayıt Ol</h1>
+                    <div asp-validation-summary="ModelOnly" class="text-warning small"></div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label asp-for="FirstName" class="form-label"></label>
+                            <input asp-for="FirstName" class="form-control" placeholder="Ad" autocomplete="given-name" required />
+                            <span asp-validation-for="FirstName" class="text-warning small"></span>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="LastName" class="form-label"></label>
+                            <input asp-for="LastName" class="form-control" placeholder="Soyad" autocomplete="family-name" required />
+                            <span asp-validation-for="LastName" class="text-warning small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label asp-for="DateOfBirth" class="form-label"></label>
+                        <input asp-for="DateOfBirth" class="form-control" placeholder="GG/AA/YYYY" maxlength="10" data-date-tr data-max="@DateTime.Today.AddYears(-18).ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture)"
+                               pattern="\d{2}/\d{2}/\d{4}" title="Tarihi GG/AA/YYYY biçiminde girin (ör. 20/10/2000)." required />
+                        <span asp-validation-for="DateOfBirth" class="text-warning small"></span>
+                    </div>
+
+                    <div class="mb-2">
+                        <span class="form-label d-block">Cinsiyet</span>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" asp-for="Gender" value="@Gender.Female" id="genderFemale" required />
+                            <label class="form-check-label" for="genderFemale">Kadın</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" asp-for="Gender" value="@Gender.Male" id="genderMale" />
+                            <label class="form-check-label" for="genderMale">Erkek</label>
+                        </div>
+                        <span asp-validation-for="Gender" class="text-warning small d-block"></span>
+                    </div>
+
+                    <div class="mb-2">
+                        <label asp-for="Address" class="form-label"></label>
+                        <partial name="_DistrictSelect" model="(nameof(Model.Address), nameof(Model.Address), Model.Address)" />
+                        <span asp-validation-for="Address" class="text-warning small"></span>
+                    </div>
+
+                    <div class="mb-2">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="E-posta" autocomplete="email" required />
+                        <span asp-validation-for="Email" class="text-warning small"></span>
+                    </div>
+
+                    <div class="mb-2">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <input asp-for="Phone" type="tel" class="form-control" placeholder="Telefon" autocomplete="tel"
+                               inputmode="numeric" maxlength="11" pattern="0[0-9]{10}" data-phone-tr title="Telefon 0 ile başlamalı ve 11 haneli olmalı (ör. 05321234567)." required />
+                        <span asp-validation-for="Phone" class="text-warning small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" placeholder="Şifre" autocomplete="new-password" minlength="8" required />
+                        <span asp-validation-for="Password" class="text-warning small"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input asp-for="AcceptKvkk" class="form-check-input" required />
+                        <label asp-for="AcceptKvkk" class="form-check-label text-nowrap">
+                            <a href="#" class="link-plain" data-bs-toggle="modal" data-bs-target="#kvkkModal">KVKK koşullarını kabul ediyorum.</a>
+                        </label>
+                        <span asp-validation-for="AcceptKvkk" class="text-warning small d-block"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-green w-100">Kayıt Ol</button>
+                    <p class="small text-center mt-3 mb-0">Zaten bir hesabın var mı? <a asp-action="SignIn" class="link-nav">Giriş yap</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<partial name="_KvkkModal" />
+
+@section Scripts {
+    <partial name="_DatePicker" />
+    <script src="~/js/forms.js" asp-append-version="true"></script>
+}

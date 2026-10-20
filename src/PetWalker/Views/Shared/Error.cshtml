@@ -1,0 +1,25 @@
+@model ErrorViewModel
+@{
+    var notFound = Model.StatusCode == 404;
+    var tooMany = Model.StatusCode == 429;
+    ViewData["Title"] = notFound ? "Sayfa Bulunamadı" : tooMany ? "Çok Fazla Deneme" : "Hata";
+}
+
+<section class="page-section">
+    <div class="container text-center" style="max-width: 640px;">
+        <img src="~/images/logo.svg" alt="" width="96" height="96" class="mb-3" />
+        <h1>@(notFound ? "Sayfa bulunamadı" : tooMany ? "Çok fazla deneme" : "Bir şeyler ters gitti")</h1>
+        <p class="text-muted">
+            @(notFound
+                ? "Aradığın sayfa taşınmış ya da hiç var olmamış olabilir."
+                : tooMany
+                    ? "Kısa sürede çok fazla form gönderdin. Lütfen birkaç dakika bekleyip tekrar dene."
+                    : "İsteğin işlenirken beklenmeyen bir hata oluştu. Lütfen biraz sonra tekrar dene.")
+        </p>
+        @if (Model.ShowRequestId)
+        {
+            <p class="small text-muted">Hata kodu: <code>@Model.RequestId</code></p>
+        }
+        <a asp-controller="Home" asp-action="Index" class="btn btn-brand">Ana Sayfaya Dön</a>
+    </div>
+</section>

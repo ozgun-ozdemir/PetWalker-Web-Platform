@@ -1,0 +1,97 @@
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<section class="photo-page bg-home home-hero">
+    <div class="container-fluid px-4 px-lg-5">
+        <div class="row">
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-dark">
+                    <h1>PetWalker</h1>
+                    <p class="slogan">Patiler güvende, içiniz rahat.</p>
+                    <p>
+                        PetWalker, evcil hayvan sahiplerini çevrelerindeki deneyimli ve güvenilir gezdiricilerle buluşturur.
+                        Gezdiricilerin deneyimini, ücretini ve yorumlarını inceleyin, size uyan zamanda yürüyüşünüzü planlayın.
+                    </p>
+                    <a asp-controller="Home" asp-action="Contact" class="btn btn-green btn-lg mt-2">
+                        <i class="fa-solid fa-paper-plane"></i> Bize Ulaşın
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section">
+    <div class="container">
+        <h2 class="text-center mb-4">Neden Biz?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="why-us-item"><i class="fa-solid fa-award"></i><h4>Kalite</h4><p class="mb-0">Birinci sınıf hizmet sunuyoruz.</p></div>
+            </div>
+            <div class="col-md-4">
+                <div class="why-us-item"><i class="fa-solid fa-shield-dog"></i><h4>Güvenilirlik</h4><p class="mb-0">Hizmetlerimiz güvenilir ve tutarlı.</p></div>
+            </div>
+            <div class="col-md-4">
+                <div class="why-us-item"><i class="fa-solid fa-headset"></i><h4>Müşteri Hizmetleri</h4><p class="mb-0">Her zaman yanınızdayız.</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="care-section page-section">
+    <div class="container text-center" style="max-width: 820px;">
+        <h2>Sizi Önemsiyoruz</h2>
+        <p class="mb-0">
+            Platformumuz, evcil hayvanınız için size en güvenilir gezdiriciyi bulmanızı sağlar. Gezdiricilerin deneyimlerini,
+            diğer sahiplerin verdiği puanları ve yorumlarını görerek size en uygun kişiyi seçebilirsiniz.
+        </p>
+    </div>
+</section>
+
+<section class="page-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <img src="~/images/dog3.jpg" class="card-img-top" alt="">
+                    <div class="card-body">
+                        <h5 class="card-title">Profilim</h5>
+                        <p class="card-text">Bilgilerini ve evcil hayvanlarını yönet, istersen gezdirici ol.</p>
+                        <a asp-controller="Account" asp-action="Profile" class="btn btn-green">Profilim</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <img src="~/images/dog2.jpg" class="card-img-top" alt="">
+                    <div class="card-body">
+                        <h5 class="card-title">Gezdirici Ara</h5>
+                        <p class="card-text">Konuma, deneyime veya puana göre aradığın gezdiriciyi bul.</p>
+                        <a asp-controller="Walkers" asp-action="Index" class="btn btn-green">Gezdirici Ara</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <img src="~/images/dog4.jpg" class="card-img-top" alt="">
+                    <div class="card-body">
+                        <h5 class="card-title">Yürüyüşlerim</h5>
+                        <p class="card-text">Planlanan veya geçmiş yürüyüşlerini gör ve istersen puan ver.</p>
+                        <a asp-controller="Walks" asp-action="Index" class="btn btn-green">Yürüyüşlerim</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<button type="button" class="btn btn-green scroll-top" id="scrollTop" aria-label="Yukarı çık"><i class="fa-solid fa-arrow-up"></i></button>
+
+@section Scripts {
+    <script>
+        const scrollBtn = document.getElementById('scrollTop');
+        addEventListener('scroll', () => scrollBtn.classList.toggle('show', scrollY > 400));
+        scrollBtn.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+    </script>
+}

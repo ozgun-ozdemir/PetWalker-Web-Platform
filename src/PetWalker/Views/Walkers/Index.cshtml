@@ -1,0 +1,84 @@
+@model WalkerSearchViewModel
+@{
+    ViewData["Title"] = "Gezdirici Ara";
+}
+
+<section class="page-section">
+    <div class="container">
+        <h1 class="mb-1">Gezdirici Ara</h1>
+        <p class="text-muted mb-4">Konuma, deneyime veya puana göre aradığın gezdiriciyi bul.</p>
+
+        <form asp-action="Index" method="get" class="surface row g-3 align-items-end mx-0 mb-4">
+            <div class="col-md-6 col-lg-4">
+                <label asp-for="Location" class="form-label">Konum</label>
+                <select asp-for="Location" class="form-select">
+                    <option value="">Tüm ilçeler</option>
+                    @foreach (var d in Istanbul.Districts)
+                    {
+                        <option value="@d">@d</option>
+                    }
+                </select>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label asp-for="MinExperience" class="form-label">Min. deneyim</label>
+                <div class="input-group">
+                    <input asp-for="MinExperience" type="number" min="0" max="60" class="form-control" placeholder="0" />
+                    <span class="input-group-text">yıl</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label asp-for="MinRating" class="form-label">Puan</label>
+                <select asp-for="MinRating" class="form-select">
+                    <option value="">Hepsi</option>
+                    <option value="3">3+</option>
+                    <option value="4">4+</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div class="col-md-8 col-lg-3">
+                <label asp-for="Sort" class="form-label">Sırala</label>
+                <select asp-for="Sort" class="form-select">
+                    @foreach (var (value, label) in WalkerSearchViewModel.SortOptions)
+                    {
+                        <option value="@value">@label</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 col-lg-1 d-grid">
+                <button type="submit" class="btn btn-brand"><i class="fa-solid fa-magnifying-glass"></i> Ara</button>
+            </div>
+        </form>
+
+        @if (Model.Results.Count == 0)
+        {
+            <p class="text-muted">Aramana uygun gezdirici bulunamadı. <a asp-action="Index">Filtreleri temizle</a></p>
+        }
+        <div class="row g-4">
+            @foreach (var card in Model.Results)
+            {
+                var w = card.Walker;
+                <div class="col-md-6 col-lg-4">
+                    <div class="card walker-card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <img src="@(card.PhotoPath ?? Url.Content("~/images/dog.jpg"))" alt="" class="walker-avatar" />
+                                <div>
+                                    <h5 class="card-title mb-0">@w.FullName</h5>
+                                    <p class="small text-muted mb-0">@w.Age yaş · @w.Gender.ToTurkish()</p>
+                                </div>
+                            </div>
+                            <p class="mb-1"><i class="fa-solid fa-location-dot text-brand"></i> @w.Address</p>
+                            <p class="mb-1"><i class="fa-solid fa-briefcase text-brand"></i> @w.ExperienceYears yıl deneyim</p>
+                            <p class="mb-1"><i class="fa-solid fa-turkish-lira-sign text-brand"></i> @w.PricePer30Min.ToString("0.##") ₺ / 30 dk</p>
+                            <p class="mb-3">
+                                <partial name="_Stars" model="card.AverageRating" />
+                                <span class="small text-muted">@(card.RatingCount == 0 ? "Henüz değerlendirme yok" : $"({card.RatingCount})")</span>
+                            </p>
+                            <a asp-action="Details" asp-route-id="@w.Id" class="btn btn-green mt-auto align-self-start">Profili Görüntüle</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

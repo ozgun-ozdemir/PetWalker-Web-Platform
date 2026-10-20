@@ -1,0 +1,60 @@
+@model WalksViewModel
+@{
+    ViewData["Title"] = "Yürüyüşlerim";
+    var pending = Model.BookedWithMe.Count(w => w.Status == WalkStatus.Pending && w.StartsAt > DateTime.Now);
+}
+
+<section class="page-section">
+    <div class="container">
+        <div class="surface mb-4">
+            <h1 class="h3 mb-2">Yürüyüşlerim</h1>
+            <p class="text-muted mb-2">Planlanan veya geçmiş yürüyüşlerini gör ve istersen puan ver.</p>
+            @if (Model.MyWalks.Count == 0)
+            {
+                <p class="text-muted mb-1">Henüz yürüyüş planlamadın. Bir gezdirici bul.</p>
+                <a asp-controller="Walkers" asp-action="Index" class="link-nav fw-bold">Gezdirici Ara</a>
+            }
+            @foreach (var walk in Model.MyWalks)
+            {
+                <partial name="_WalkCard" model="(walk, true)" />
+            }
+        </div>
+
+        <div class="surface">
+            <h2 class="h3 mb-2">
+                Bana Gelen Rezervasyonlar
+                @if (pending > 0) { <span class="badge text-bg-warning align-middle fs-6">@pending yeni istek</span> }
+            </h2>
+            <p class="text-muted mb-2">Gelen istekleri buradan kabul edebilir veya reddedebilirsin.</p>
+            @if (Model.BookedWithMe.Count == 0)
+            {
+                <p class="text-muted mb-0">
+                    Henüz sana rezervasyon yapılmadı.
+                    @if (!Model.IsWalker)
+                    {
+                        <text>Rezervasyon alabilmek için profilinden gezdirici ol.</text>
+                    }
+                </p>
+                @if (!Model.IsWalker)
+                {
+                    <a asp-controller="Account" asp-action="Profile" class="link-nav fw-bold d-inline-block mt-1">Profilim</a>
+                }
+            }
+            @foreach (var walk in Model.BookedWithMe)
+            {
+                <partial name="_WalkCard" model="(walk, false)" />
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @if (TempData["RateWalkId"] is int rateId)
+    {
+        @* Opens the rating window of the walk that was just completed. *@
+        <script>
+            const rate = document.getElementById('rateModal@(rateId)');
+            if (rate) bootstrap.Modal.getOrCreateInstance(rate).show();
+        </script>
+    }
+}

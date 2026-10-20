@@ -1,0 +1,72 @@
+@model (BecomeWalkerViewModel Form, bool IsWalker)
+@{
+    var f = Model.Form;
+    var reopen = TempData["OpenWalkerModal"] is true;
+}
+<div class="modal fade" id="walkerModal" tabindex="-1" aria-labelledby="walkerModalTitle" aria-hidden="true" data-reopen="@(reopen ? "true" : "false")">
+    <div class="modal-dialog modal-dialog-centered">
+        <form asp-controller="Account" asp-action="BecomeWalker" method="post" class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="walkerModalTitle">@(Model.IsWalker ? "Gezdirici Bilgilerim" : "Gezdirici Profili Oluştur")</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                @if (!Model.IsWalker)
+                {
+                    <p class="small text-muted">Kaydettiğinde, profil bilgilerinle birlikte Gezdirici Ara sayfasında listelenirsin.</p>
+                }
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label for="wfExperience" class="form-label">Deneyim</label>
+                        <div class="input-group">
+                            <input id="wfExperience" name="WalkerForm.ExperienceYears" value="@f.ExperienceYears" type="number" min="0" max="60" class="form-control" required />
+                            <span class="input-group-text">yıl</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="wfPrice" class="form-label">Ücret</label>
+                        <div class="input-group">
+                            <input id="wfPrice" name="WalkerForm.PricePer30Min" value="@f.PricePer30Min.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" type="number" min="1" max="10000" step="1" class="form-control" required />
+                            <span class="input-group-text">₺ / 30 dk</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <span class="form-label d-block">Süre seçenekleri</span>
+                    @foreach (var d in BookWalkViewModel.AllowedDurations)
+                    {
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="WalkerForm.Durations" value="@d" id="dur@(d)" checked="@f.Durations.Contains(d)" />
+                            <label class="form-check-label" for="dur@(d)">@BookWalkViewModel.DurationLabel(d)</label>
+                        </div>
+                    }
+                </div>
+                <div class="mb-1">
+                    <label for="wfBio" class="form-label">Açıklama</label>
+                    <textarea id="wfBio" name="WalkerForm.Bio" rows="4" class="form-control" minlength="10" maxlength="1000" required
+                              placeholder="Kendinden, deneyimlerinden ve müsait olduğun zamanlardan bahset.">@f.Bio</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @if (Model.IsWalker)
+                {
+                    @* Submits the leave form below. *@
+                    <button type="submit" form="leaveWalkerForm" class="btn btn-outline-danger me-auto"
+                            onclick="return confirm('Emin misiniz? Gezdiriciler arasından ayrılırsanız bekleyen yürüyüşlerin iptal edilecek.');">
+                        <i class="fa-solid fa-person-walking-arrow-right"></i> Ayrıl
+                    </button>
+                }
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="submit" class="btn btn-brand">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+@if (Model.IsWalker)
+{
+    <form asp-controller="Account" asp-action="LeaveWalker" method="post" id="leaveWalkerForm"></form>
+}
+@if (reopen)
+{
+    <script>addEventListener('DOMContentLoaded', () => bootstrap.Modal.getOrCreateInstance(document.getElementById('walkerModal')).show());</script>
+}

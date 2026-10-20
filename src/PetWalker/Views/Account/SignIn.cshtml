@@ -1,0 +1,33 @@
+@model SignInViewModel
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<section class="photo-page bg-signin d-flex align-items-center">
+    <div class="container-fluid px-4 px-lg-5 w-100">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center">
+                <form asp-action="SignIn" method="post" class="glass-dark auth-form signin">
+                    <h1 class="h3 mb-3">Giriş Yap</h1>
+                    <div asp-validation-summary="ModelOnly" class="text-warning small"></div>
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <div class="form-floating mb-2 text-dark">
+                        <input asp-for="Email" class="form-control" placeholder="E-posta" autocomplete="email" required />
+                        <label asp-for="Email"></label>
+                    </div>
+                    <span asp-validation-for="Email" class="text-warning small"></span>
+                    <div class="form-floating mb-3 text-dark">
+                        <input asp-for="Password" class="form-control" placeholder="Şifre" autocomplete="current-password" required />
+                        <label asp-for="Password"></label>
+                    </div>
+                    <span asp-validation-for="Password" class="text-warning small"></span>
+                    <button class="w-100 btn btn-lg btn-green" type="submit">Giriş Yap</button>
+                    <div class="text-center mt-3 small">
+                        <a asp-action="ForgotPassword">Şifremi unuttum</a>
+                    </div>
+                    <p class="text-center small mt-2 mb-0">Bir hesabın yok mu? <a asp-action="SignUp">Kayıt ol</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

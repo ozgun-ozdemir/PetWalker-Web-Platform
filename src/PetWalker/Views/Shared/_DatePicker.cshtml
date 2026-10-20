@@ -1,0 +1,31 @@
+@* Turkish date picker (flatpickr), day/month/year in every browser. Fields opt in with data-date-tr or data-datetime-tr. *@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css"
+      integrity="sha384-RkASv+6KfBMW9eknReJIJ6b3UnjKOKC5bOUaNgIY778NFbQ8MtWq9Lr/khUgqtTt" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"
+        integrity="sha384-5JqMv4L/Xa0hfvtF06qboNdhvuYXUku9ZrhZh3bSk8VXF0A/RuSLHpLsSV9Zqhl6" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/tr.min.js"
+        integrity="sha384-Zo/4gvqIAGAUmQz8hGhuJrw6tVDa0bYrL/9X14LxoXRHyDY6L6b6PNRO+A7lclDy" crossorigin="anonymous"></script>
+<script>
+    // Date only, e.g. date of birth. The typed/sent value is GG/AA/YYYY.
+    for (const input of document.querySelectorAll('input[data-date-tr]')) {
+        flatpickr(input, {
+            locale: 'tr',
+            dateFormat: 'd/m/Y',
+            allowInput: true,
+            maxDate: input.dataset.max || null,
+        });
+    }
+    // Date and time, e.g. a walk. Shown as GG/AA/YYYY SS:DD; sent to the server as YYYY-MM-DD HH:MM.
+    for (const input of document.querySelectorAll('input[data-datetime-tr]')) {
+        flatpickr(input, {
+            locale: 'tr',
+            enableTime: true,
+            time_24hr: true,
+            minuteIncrement: 15,
+            dateFormat: 'Y-m-d H:i',
+            altInput: true,
+            altFormat: 'd/m/Y H:i',
+            minDate: input.dataset.min || null,
+        });
+    }
+</script>

@@ -1,0 +1,77 @@
+@model ContactFormViewModel
+@{
+    ViewData["Title"] = "İletişim";
+}
+
+<section class="photo-page bg-contact">
+    <div class="container">
+        <h1 class="photo-title">İletişim</h1>
+        <div class="row g-0 joined-cards">
+            <div class="col-lg-4">
+                <div class="card info-card airy">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="h4 mb-3"><i class="fa-solid fa-paper-plane text-brand"></i> Bize Ulaşın</h3>
+                        <form asp-action="Contact" method="post" class="d-flex flex-column flex-grow-1" data-tr-validation>
+                            <partial name="_FormErrors" />
+                            <div class="mb-3">
+                                <label asp-for="FullName" class="form-label"></label>
+                                <input asp-for="FullName" class="form-control" placeholder="Ad Soyad" autocomplete="name" required />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Subject" class="form-label"></label>
+                                <input asp-for="Subject" class="form-control" placeholder="Konu" required />
+                                <span asp-validation-for="Subject" class="text-danger small"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" placeholder="E-posta" autocomplete="email" required />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Body" class="form-label"></label>
+                                <textarea asp-for="Body" class="form-control" rows="4" placeholder="Mesajınız" required minlength="10"></textarea>
+                                <span asp-validation-for="Body" class="text-danger small"></span>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input asp-for="AcceptKvkk" class="form-check-input" required />
+                                <label asp-for="AcceptKvkk" class="form-check-label">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#kvkkModal">KVKK koşullarını kabul ediyorum.</a>
+                                </label>
+                                <span asp-validation-for="AcceptKvkk" class="text-danger small d-block"></span>
+                            </div>
+                            <button type="submit" class="btn btn-green w-100 mt-auto"><i class="fa-solid fa-paper-plane"></i> Gönder</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card info-card airy">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="h4 mb-3"><i class="fa-solid fa-address-card text-brand"></i> İletişim Bilgilerimiz</h3>
+                        <p class="fw-bold">Bize Buradan Ulaşabilirsiniz:</p>
+                        <partial name="_ContactInfo" />
+                        <h4 class="h5 mt-3 mb-3">Sosyal Medya Hesaplarımız</h4>
+                        <partial name="_SocialLinks" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card info-card airy">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="h4 mb-3"><i class="fa-solid fa-map-location-dot text-brand"></i> Konumumuz</h3>
+                        <iframe class="map-frame flex-grow-1" title="Doğuş Üniversitesi Dudullu Kampüsü haritası" loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                src="https://maps.google.com/maps?q=Do%C4%9Fu%C5%9F%20%C3%9Cniversitesi%20Dudullu%20Kamp%C3%BCs%C3%BC%2C%20%C3%9Cmraniye%2C%20%C4%B0stanbul&z=15&output=embed"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<partial name="_KvkkModal" />
+
+@section Scripts {
+    <script src="~/js/forms.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,10 @@
+@model (string Name, string Id, string? Selected)
+@* Address = one of the Istanbul districts. The stored value is "Kadıköy, İstanbul". *@
+<select name="@Model.Name" id="@Model.Id" class="form-select" required>
+    <option value="">İlçe seçin</option>
+    @foreach (var d in Istanbul.Districts)
+    {
+        var value = Istanbul.ToAddress(d);
+        <option value="@value" selected="@(value == Model.Selected)">@d</option>
+    }
+</select>
