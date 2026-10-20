@@ -1,6 +1,6 @@
 # PetWalker Web Platform V2
 
-A web platform that connects pet owners with dog walkers in Istanbul. Owners can search for walkers, book walks, message walkers, and rate walkers after a walk. This is a rewrite of our 2023 school final project (beta), originally built with ASP.NET MVC 5 on .NET Framework 4.7.2. V2 moves it to ASP.NET Core on .NET 10, so it runs on Windows, macOS and Linux. It also adds a redesigned interface, new features such as booking requests and walk ratings, SMTP email support and automated tests.
+A web platform that connects pet owners with dog walkers in Istanbul. Owners can search for walkers, book walks, message walkers, and rate walkers after a walk. This is a rewrite of our 2023 school final project, originally built with ASP.NET MVC 5 on .NET Framework 4.7.2. V2 moves it to ASP.NET Core on .NET 10, so it runs on Windows, macOS and Linux. It also adds a redesigned interface, new features such as booking requests and walk ratings, SMTP email support and automated tests.
 
 ## Features
 
@@ -40,8 +40,8 @@ A web platform that connects pet owners with dog walkers in Istanbul. Owners can
 Requirement: the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```bash
-git clone https://github.com/<your-username>/PetWalker-Web-Platform-V2.git
-cd PetWalker-Web-Platform-V2
+git clone https://github.com/ozgun-ozdemir/PetWalker-Web-Platform.git
+cd PetWalker-Web-Platform
 dotnet run --project src/PetWalker --launch-profile http
 ```
 
